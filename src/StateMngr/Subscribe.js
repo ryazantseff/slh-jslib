@@ -1,4 +1,5 @@
 import {filter, skip} from 'rxjs/operators'
+import TypeOf from './TypeOf.js'
 
 const actionPipe = {
     'change': [skip(1)],

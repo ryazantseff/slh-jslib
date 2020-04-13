@@ -1,9 +1,33 @@
-import {useState, useEffect, createElement} from 'react'
+import React, {useState, useEffect, createElement} from 'react'
 import {render} from 'react-dom'
 import {of, BehaviorSubject} from 'rxjs'
 import {first} from 'rxjs/operators'
+import StateStorage from '../StateMngr/StateMngr.js'
 
-const ReactRx = () => {
+const ReactRx = ({
+    StatesStor = StateStorage(),
+    _React = React
+} = {}) => {
+
+    const OnChange = ({
+        nodePath = [],
+        defaultValue = {},
+        mode = 'single'
+    } = {}) => {
+        const node = StatesStor.SubtreeByPath({nodePath})
+        const [state, setState] = _React.useState(node.Snapshot())
+        _React.useEffect(() => {
+            const sbs = node.OnChange({
+                fn: i => setState(node.Snapshot()),
+                mode,
+            })
+            return () => {
+                sbs.forEach(i => i.unsubscribe())
+            }
+        }, [])
+        return state
+    }
+
     const useOBS = ({
         observable = of({}),
         defaultValue = {}
@@ -52,6 +76,7 @@ const ReactRx = () => {
     }
 
     return {
+        OnChange,
         useOBS,
         useBS,
         runOnceOBS,

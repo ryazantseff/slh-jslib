@@ -26,7 +26,9 @@ const objectsIntersection = (o1, o2) => {
     return first.filter(k => k in next)
 }
 
-const SubtreeByPath = function({storPath = []} = {}) {
+const SubtreeByPath = function({storPath = [], nodePath = null} = {}) {
+    storPath = nodePath != null ? nodePath : storPath
+    // console.log(storPath)
     return storPath.reduce((acc, item) => {
             // console.log(acc)
             return acc.Content.data[item]

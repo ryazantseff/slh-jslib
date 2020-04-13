@@ -22,6 +22,7 @@ return {
     ElementFocusBS,
     KeyLogger,
     ReactRx: ReactRx(),
+    ReactRxCustom: i => ReactRx(i),
     PostRequest,
     SubscribeOnEvent,
     StateStorage,
