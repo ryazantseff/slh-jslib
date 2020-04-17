@@ -32,8 +32,8 @@ const ReactRx = ({
         observable = of({}),
         defaultValue = {}
     } = {}) => {
-        const [state, setState] = useState(defaultValue)
-        useEffect(() => {
+        const [state, setState] = _React.useState(defaultValue)
+        _React.useEffect(() => {
             const sbs = observable.subscribe(i => setState(i), i => console.error(i))
             return () => sbs.unsubscribe()
         }, [])
@@ -44,8 +44,8 @@ const ReactRx = ({
         behaviorSubject = new BehaviorSubject({}),
         defaultValue = {}
     } = {}) => {
-        const [state, setState] = useState(defaultValue)
-        useEffect(() => {
+        const [state, setState] = _React.useState(defaultValue)
+        _React.useEffect(() => {
             const sbs = behaviorSubject.subscribe(i => setState(i), i => console.error(i))
             return () => sbs.unsubscribe()
         }, [])

@@ -35,8 +35,8 @@ const SubtreeByPath = function({storPath = [], nodePath = null} = {}) {
         }, this)
 } 
 
-const ModifyNode = function({storPath = [], value = {}, mode = 'replace', delay = 0} = {}) {
-        
+const ModifyNode = function({storPath = [], nodePath = null, value = {}, mode = 'replace', delay = 0} = {}) {
+    storPath = nodePath != null ? nodePath : storPath    
     const modifyAction = () => {
         const subtree = SubtreeByPath.bind(this)({storPath});
         // console.log(subtree)

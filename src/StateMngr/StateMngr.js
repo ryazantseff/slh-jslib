@@ -1,7 +1,7 @@
 import {BehaviorSubject} from 'rxjs'
 import {filter, first, skip} from 'rxjs/operators'
 import TypeOf from './TypeOf.js'
-import {OnAdd, OnChange} from './Subscribe.js'
+import {OnAdd, OnChange, Subscribe} from './Subscribe.js'
 import {ModifyNode, SubtreeByPath} from './Modify.js'
 
 
@@ -55,6 +55,7 @@ const createStateStorage = ({initData = {}} = {}) => {
         CreateStateStorage: createStateStorage,
         OnAdd,
         OnChange,
+        Subscribe,
         ModifyNode,
         Snapshot,
         SubtreeByPath,
