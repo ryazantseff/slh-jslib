@@ -37,7 +37,6 @@ const Subscribe = () => {
         , [])
     
     const OnChange = function({fn = (() => {}), mode = 'single'} = {}) {
-        console.log(subscribeSubtree)
         return (({
             'single': () => [subscribeSingle(this, fn, 'change')],
             'tree': () => [...subscribeSubtree(this, fn, 'change'), subscribeSingle(this, fn, 'change')],

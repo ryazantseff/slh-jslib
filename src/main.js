@@ -2,7 +2,7 @@ import { fromEvent } from 'rxjs'
 import { tap } from 'rxjs/operators'
 import GlobalKeyboardEventsLogic from './GlobalKeyboardEventsLogic.js'
 import ElementFocusBS from './ElementFocusBS.js'
-import PostRequest from './PostRequest.js'
+import {PostRequest, GetRequest, GoGet} from './Requests.js'
 import SubscribeOnEvent from './SubscribeOnEvent.js'
 import ReactRx from './ReactRx/ReactRx.js'
 import StateStorage from './StateMngr/StateMngr.js'
@@ -25,6 +25,8 @@ return {
     ReactRx: ReactRx(),
     ReactRxCustom: i => ReactRx(i),
     PostRequest,
+    GetRequest,
+    GoGet,
     SubscribeOnEvent,
     StateStorage,
     RunObservable: ReactRx().runOnceOBS

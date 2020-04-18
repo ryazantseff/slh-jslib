@@ -1,5 +1,5 @@
 import {BehaviorSubject} from 'rxjs'
-import {filter, first, skip} from 'rxjs/operators'
+import {filter, first, skip, map} from 'rxjs/operators'
 import TypeOf from './TypeOf.js'
 import {OnAdd, OnChange, Subscribe} from './Subscribe.js'
 import {ModifyNode, SubtreeByPath} from './Modify.js'
@@ -51,6 +51,13 @@ const createStateStorage = ({initData = {}} = {}) => {
         return subTree ? snapshot(subTree) : snapshot(this)
     }
 
+    // const GetObservable = ({nodePath = []} = {}) => {
+    //     const node = SubtreeByPath.bind(this)({nodePath})
+    //     return node.Content.bs.pipe(
+    //         map(i => i.data)
+    //     )
+    // }
+
     return {
         CreateStateStorage: createStateStorage,
         OnAdd,
@@ -60,6 +67,7 @@ const createStateStorage = ({initData = {}} = {}) => {
         Snapshot,
         SubtreeByPath,
         Content: stors,
+        // GetObservable
     }
 }
 

@@ -23,12 +23,10 @@ const WebSocketMsg = ({
     const $combined = combineLatest(...Object.keys(config).map(key => config[key]['msgStream']))
     
     const $ws = webSocket(wsurl).pipe(
-        // tap(i=> console.log(i)),
         withLatestFrom($combined),
         tap(([msg, combined]) => {
             combined[-1] = [];
-            // const ind = Object.keys(config).findIndex(key => key == msg.Name);
-            const separatedStream = combined[Object.keys(config).findIndex(key => key == msg.Name)];
+            const separatedStream = combined[Object.keys(config).findIndex(key => key == msg.name)];
 
             msg = (config[msg.name] || mockObj)['mutateFn'](msg);
             (config[msg.name] || mockObj)['msgStream']

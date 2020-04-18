@@ -75,12 +75,24 @@ const ReactRx = ({
         return parent
     }
 
+    const insertReactChildBefore = ({
+        parent = document.body,
+        pointer = document.body.childNodes[0],
+        child = createElement('div', {}, "mock")
+    } = {}) => {
+        const reactHost = document.createElement("div")
+        parent.insertBefore(reactHost, pointer)
+        render(createElement(child), reactHost)
+        return parent
+    }
+
     return {
         OnChange,
         useOBS,
         useBS,
         runOnceOBS,
-        appendReactChild
+        appendReactChild,
+        insertReactChildBefore
     }
 
 }
