@@ -1,4 +1,4 @@
-import { map, tap, catchError, withLatestFrom } from 'rxjs/operators'
+import { map, tap, catchError, switchMap } from 'rxjs/operators'
 import { ajax } from 'rxjs/ajax'
 import { of } from 'rxjs'
 import SubscribeOnEvent from './SubscribeOnEvent.js'
@@ -54,9 +54,7 @@ const GoGet = ({
                 element,
                 event,
                 sbsFunc,
-                pipe: [
-                    withLatestFrom(GetRequest({url}))
-                ]
+                pipe: [ switchMap(i => GetRequest({url})) ]
             })
         })() :
         (() => {})()
