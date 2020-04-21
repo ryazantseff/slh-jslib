@@ -6,7 +6,8 @@ import StateStorage from '../StateMngr/StateMngr.js'
 
 const ReactRx = ({
     StatesStor = StateStorage(),
-    _React = React
+    _React = React,
+    _render =  render
 } = {}) => {
 
     const OnChange = ({
@@ -76,11 +77,11 @@ const ReactRx = ({
     const insertReactChildBefore = ({
         parent = document.body,
         pointer = document.body.childNodes[0],
-        child = createElement('div', {}, "mock")
+        child = _React.createElement('div', {}, "mock")
     } = {}) => {
         const reactHost = document.createElement("div")
         parent.insertBefore(reactHost, pointer)
-        render(createElement(child), reactHost)
+        _render(_React.createElement(child), reactHost)
         return parent
     }
 
