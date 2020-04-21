@@ -3,6 +3,7 @@ import { ajax } from 'rxjs/ajax'
 import { of } from 'rxjs'
 import SubscribeOnEvent from './SubscribeOnEvent.js'
 import { Subscribe } from './StateMngr/Subscribe.js'
+import ReactRx from './ReactRx/ReactRx.js'
 
 const PostRequest = ({
     url = 'localhost',
@@ -57,7 +58,11 @@ const GoGet = ({
                 pipe: [ switchMap(i => GetRequest({url})) ]
             })
         })() :
-        (() => {})()
+        (() => {
+            ReactRx().runOnceOBS({
+                observable: GetRequest({url})
+            })
+        })
 
 
 export { PostRequest, GetRequest, GoGet }

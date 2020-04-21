@@ -6,7 +6,7 @@ import {PostRequest, GetRequest, GoGet} from './Requests.js'
 import SubscribeOnEvent from './SubscribeOnEvent.js'
 import ReactRx from './ReactRx/ReactRx.js'
 import StateStorage from './StateMngr/StateMngr.js'
-import WebSocketMsg from './WebSocketMsg/wsmsg.js'
+import {WebSocketMsg, CombineStreams} from './WebSocketMsg/wsmsg.js'
 
 const SantasLittleHelper = ({
     keyDownEventStream = fromEvent(document, 'keydown')
@@ -19,6 +19,7 @@ const KeyLogger = keyDownEventStream.pipe(
 
 return {
     WebSocketMsg,
+    CombineStreams,
     GlobalKeyboardEventsLogic: GlobalKeyboardEventsLogic(keyDownEventStream),
     ElementFocusBS,
     KeyLogger,

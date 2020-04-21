@@ -1,6 +1,6 @@
 import { webSocket } from "rxjs/webSocket"
-import { BehaviorSubject, combineLatest } from 'rxjs'
-import { withLatestFrom, tap, catchError } from 'rxjs/operators'
+import { BehaviorSubject, combineLatest, of, merge } from 'rxjs'
+import { withLatestFrom, tap, catchError, map } from 'rxjs/operators'
 
 const WebSocketMsg = ({
     wsurl = `ws://${document.domain}:${location.port}/ws`,
@@ -47,4 +47,17 @@ const WebSocketMsg = ({
 
 }
 
-export default WebSocketMsg
+const CombineStreams = ({
+    streams = [of({})],
+    logLength = 25
+} = {}) => {
+    const mergedBuff = new BehaviorSubject([])
+    const combinedStreams = merge(...streams).pipe(
+        withLatestFrom(mergedBuff),
+        map(([msg, buff]) => [msg[0], ...buff].slice(0, logLength)),
+        tap(i => mergedBuff.next(i))
+    )
+    return combinedStreams
+}
+
+export { WebSocketMsg, CombineStreams }

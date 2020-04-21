@@ -56,12 +56,10 @@ const ReactRx = ({
         observable = of({}),
         relayFunc = () => {}
     } = {}) => {
-        // console.log(observable)
-        const sbs = observable.pipe(
+        observable.pipe(
             first()
         ).subscribe(i => {
             relayFunc(i)
-            // sbs.unsubscribe()
         })
     }
 
