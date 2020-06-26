@@ -1,5 +1,5 @@
-import React, {useState, useEffect, createElement} from 'react'
-import {render} from 'react-dom'
+import React, {useState, useEffect, useRef, createElement} from 'react'
+import ReactDOM, {render} from 'react-dom'
 import {of, BehaviorSubject} from 'rxjs'
 import {first} from 'rxjs/operators'
 import StateStorage from '../StateMngr/StateMngr.js'
@@ -91,7 +91,14 @@ const ReactRx = ({
         useBS,
         runOnceOBS,
         appendReactChild,
-        insertReactChildBefore
+        insertReactChildBefore,
+        internalReact: React,
+        internalReactDOM: ReactDOM,
+        internalReactHooks: {
+            useState,
+            useEffect,
+            useRef 
+        }
     }
 
 }

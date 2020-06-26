@@ -1,8 +1,8 @@
 import { fromEvent } from 'rxjs'
-import { tap } from 'rxjs/operators'
+import { tap, map, filter } from 'rxjs/operators'
 import GlobalKeyboardEventsLogic from './GlobalKeyboardEventsLogic.js'
 import ElementFocusBS from './ElementFocusBS.js'
-import {PostRequest, GetRequest, GoGet} from './Requests.js'
+import {PostRequest, GetRequest, GoGet, GoPost, Pipes} from './Requests.js'
 import SubscribeOnEvent from './SubscribeOnEvent.js'
 import ReactRx from './ReactRx/ReactRx.js'
 import StateStorage from './StateMngr/StateMngr.js'
@@ -25,12 +25,22 @@ return {
     KeyLogger,
     ReactRx: ReactRx(),
     ReactRxCustom: i => ReactRx(i),
+    R: ReactRx().internalReact,
+    RD: ReactRx().internalReactDOM,
+    RH: ReactRx().internalReactHooks,
     PostRequest,
     GetRequest,
     GoGet,
+    GoPost,
+    Pipes,
     SubscribeOnEvent,
     StateStorage,
-    RunObservable: ReactRx().runOnceOBS
+    RunObservable: ReactRx().runOnceOBS,
+    RxOps: {
+        'map': map,
+        'tap': tap,
+        'filter': filter 
+    }
     // States: StateStorage()
 }
 }

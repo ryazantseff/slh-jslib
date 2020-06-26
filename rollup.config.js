@@ -15,7 +15,7 @@ const plugs = [
     commonjs({
         // include: 'node_modules/**',
         namedExports: {
-          'react': ['useState', 'useEffect', 'createElement'],
+          'react': ['useState', 'useEffect', 'useRef', 'createElement'],
           'react-dom': ['render']
         }
     }),
