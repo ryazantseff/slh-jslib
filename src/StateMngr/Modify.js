@@ -31,7 +31,7 @@ const SubtreeByPath = function({storPath = [], nodePath = null} = {}) {
     // console.log(storPath)
     return storPath.reduce((acc, item) => {
             // console.log(acc)
-            return acc.Content.data[item]
+            return acc?.Content?.data[item] 
         }, this)
 } 
 
@@ -39,13 +39,23 @@ const ModifyNode = function({storPath = [], nodePath = null, value = {}, mode = 
     storPath = nodePath != null ? nodePath : storPath    
     const modifyAction = () => {
         const subtree = SubtreeByPath.bind(this)({storPath});
+        const subtreeParient = storPath.length > 0 ?
+            SubtreeByPath.bind(this)({storPath: storPath.slice(0, -1)}):
+            null;
+
         // console.log(subtree)
         const newSubtree = this.CreateStateStorage({initData: value});
         (({
+            'del': () => {
+                if (subtree) {
+                    unsubscribeSubtree(subtree)
+                    subtreeParient && delete subtreeParient.Content.data[storPath.pop()]
+                }
+            },
             'replace': () => {
-                unsubscribeSubtree(subtree)
-                subtree.Content.bs.next({actionType: 'replace', data: newSubtree.Content.data})
-                newSubtree.Content.sbs.unsubscribe()
+                    unsubscribeSubtree(subtree)
+                    subtree.Content.bs.next({actionType: 'replace', data: newSubtree.Content.data})
+                    newSubtree.Content.sbs.unsubscribe()
             },
             'add': () => {
                 (({

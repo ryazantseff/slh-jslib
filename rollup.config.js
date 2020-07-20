@@ -1,15 +1,19 @@
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import replace from '@rollup/plugin-replace'
+import babel from 'rollup-plugin-babel'
 
 const plugs = [
+    babel({exclude: 'node_modules/**'}),
     resolve({
         dedupe: [ 
             'react',
             'react-dom',
             'rxjs/ajax',
             'rxjs/operators',
-            'rxjs'
+            'rxjs',
+            'js-cookie',
+            'moment'
         ],
     }),
     commonjs({
@@ -21,8 +25,7 @@ const plugs = [
     }),
     replace({
         'process.env.NODE_ENV': JSON.stringify( 'production' )
-    })
-
+    }),
 ]
 
 

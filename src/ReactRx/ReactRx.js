@@ -4,6 +4,17 @@ import {of, BehaviorSubject} from 'rxjs'
 import {first} from 'rxjs/operators'
 import StateStorage from '../StateMngr/StateMngr.js'
 
+const runOnceOBS = ({
+    observable = of({}),
+    relayFunc = () => {}
+} = {}) => {
+    observable.pipe(
+        first()
+    ).subscribe(i => {
+        relayFunc(i)
+    })
+}
+
 const ReactRx = ({
     StatesStor = StateStorage(),
     _React = React,
@@ -53,17 +64,6 @@ const ReactRx = ({
         return [state, i => behaviorSubject.next(i)]
     }
 
-    const runOnceOBS = ({
-        observable = of({}),
-        relayFunc = () => {}
-    } = {}) => {
-        observable.pipe(
-            first()
-        ).subscribe(i => {
-            relayFunc(i)
-        })
-    }
-
     const appendReactChild = ({
         parent = document.body,
         child = createElement('div', {}, "mock")
@@ -104,3 +104,4 @@ const ReactRx = ({
 }
 
 export default ReactRx
+export {runOnceOBS}

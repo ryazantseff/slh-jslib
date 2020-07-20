@@ -1,4 +1,4 @@
-import { combineLatest } from 'rxjs'
+import { combineLatest, of } from 'rxjs'
 import { filter, withLatestFrom, tap } from 'rxjs/operators'
 
 const GlobalKeyboardEventsLogic = keyDownEventStream =>
@@ -16,13 +16,12 @@ const GlobalKeyboardEventsLogic = keyDownEventStream =>
     const subs = 
         ({
             keyName = 'Enter',
-            relayObs = [rxjs.of(undefined)], //[]
+            relayObs = [of(undefined)], //[]
             relayFunc = () => {console.log('def')},
             subsFunc = () => {}
         } = {}) => {
             const $combine = combineLatest(...relayObs)
             keyStreamElementFocusFilter.pipe(
-                // rxjs.operators.tap(i => console.log(i)),
                 withLatestFrom($combine),
                 tap(([key, combine]) => {
                     key.key == keyName && relayFunc(combine)

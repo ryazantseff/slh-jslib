@@ -1,13 +1,13 @@
-import { BehaviorSubject } from 'rxjs'
+import { fromEvent, BehaviorSubject } from 'rxjs'
 
 const ElementFocusBS = (element, {onFocusPipe = [], onBlurPipe = []} = {}) => {
     const $elementFocusBS = new BehaviorSubject(
         document.hasFocus() && document.activeElement === element
     )
-    const $elementFocus = rxjs.fromEvent(element, 'focus').pipe(
+    const $elementFocus = fromEvent(element, 'focus').pipe(
         ...onFocusPipe
     ).subscribe(i => $elementFocusBS.next(true))
-    const $elementBlur = rxjs.fromEvent(element, 'blur').pipe(
+    const $elementBlur = fromEvent(element, 'blur').pipe(
         ...onBlurPipe
     ).subscribe(i => $elementFocusBS.next(false))   
     return {

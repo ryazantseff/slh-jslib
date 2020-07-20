@@ -5,44 +5,32 @@ import SubscribeOnEvent from './SubscribeOnEvent.js'
 import { Subscribe } from './StateMngr/Subscribe.js'
 import ReactRx from './ReactRx/ReactRx.js'
 
-const PostRequest = ({
+const Request = ({
     url = 'localhost',
+    pipe = [
+        map(i => i.response),
+        tap(i => console.log(i))
+    ],
+    headers = {},
     data = {},
-    pipe = [
-        map(i => i.response),
-        tap(i => console.log(i))
-    ]
+    method = 'GET',
+    errorCallback = error => console.log('error: ', error)
 } = {}) => ajax({
-    url: url,
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: {...data}
-}).pipe(
-    ...pipe,
-    catchError(error => {
-        console.log('error: ', error);
-        return rxjs.of(error);
-    })
-)
+        url: url,
+        method: method,
+        headers: {'Content-Type': 'application/json', ...headers},
+        body: {...data}
+    }).pipe(
+        ...pipe,
+        catchError(error => {
+            // console.log('error: ', error);
+            errorCallback(error)
+            return of(error);
+        })
+    )
 
-const GetRequest = ({
-    url = 'localhost',
-    pipe = [
-        map(i => i.response),
-        tap(i => console.log(i))
-    ]
-} = {}) => ajax({
-    url: url,
-    method: 'GET',
-    headers: {'Content-Type': 'application/json'},
-}).pipe(
-    ...pipe,
-    catchError(error => {
-        console.log('error: ', error);
-        return rxjs.of(error);
-    })
-)
-
+const PostRequest = (props = {}) => Request({method: 'POST', ...props})
+const GetRequest = (props = {}) => Request({method: 'GET', ...props})
 
 const GoRequest = requestFn =>
     ({
@@ -50,6 +38,7 @@ const GoRequest = requestFn =>
         element = null,
         event = 'click',
         data = {},
+        headers = {},
         sbsFunc = (() => {}) 
     } = {}) => 
         element ?
@@ -58,12 +47,12 @@ const GoRequest = requestFn =>
                     element,
                     event,
                     sbsFunc,
-                    pipe: [ switchMap(i => requestFn({url, data})) ]
+                    pipe: [ switchMap(i => requestFn({url, data, headers})) ]
                 })
             })() :
             (() => {
                 ReactRx().runOnceOBS({
-                    observable: requestFn({url, data}),
+                    observable: requestFn({url, data, headers}),
                     relayFunc: sbsFunc
                 })
             })
@@ -71,27 +60,6 @@ const GoRequest = requestFn =>
 const GoGet = GoRequest(GetRequest)
 
 const GoPost = GoRequest(PostRequest)
-
-// const GoGet = ({
-//     url = 'localhost',
-//     element = null,
-//     event = 'click',
-//     sbsFunc = (() => {}) 
-// } = {}) => 
-//     element ?
-//         (() => {
-//             return SubscribeOnEvent({
-//                 element,
-//                 event,
-//                 sbsFunc,
-//                 pipe: [ switchMap(i => GetRequest({url})) ]
-//             })
-//         })() :
-//         (() => {
-//             ReactRx().runOnceOBS({
-//                 observable: GetRequest({url})
-//             })
-//         })
 
 const Pipes = {
     filterResponse: ({debug = false} = {}) => [
