@@ -3,7 +3,7 @@ import { ajax } from 'rxjs/ajax'
 import { tap, map, filter, switchMap } from 'rxjs/operators'
 import GlobalKeyboardEventsLogic from './GlobalKeyboardEventsLogic.js'
 import ElementFocusBS from './ElementFocusBS.js'
-import {PostRequest, GetRequest, GoGet, GoPost, Pipes} from './Requests.js'
+import {PostRequest, GetRequest, GoGet, GoPost, GoPut, GoDel, Pipes} from './Requests.js'
 import SubscribeOnEvent from './SubscribeOnEvent.js'
 import ReactRx from './ReactRx/ReactRx.js'
 import StateStorage from './StateMngr/StateMngr.js'
@@ -28,6 +28,7 @@ const SantasLittleHelper = ({
         KeyLogger,
         ReactRx: ReactRx(),
         ReactRxCustom: i => ReactRx(i),
+        PropTypes: ReactRx().PropTypes,
         R: ReactRx().internalReact,
         RD: ReactRx().internalReactDOM,
         RH: ReactRx().internalReactHooks,
@@ -35,6 +36,8 @@ const SantasLittleHelper = ({
         GetRequest,
         GoGet,
         GoPost,
+        GoPut,
+        GoDel,
         Pipes,
         SubscribeOnEvent,
         StateStorage,

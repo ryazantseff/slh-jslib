@@ -48,5 +48,14 @@ export default [
         },
         plugins:[...plugs]
     },
+    {
+        input: 'src/main.js',
+        output: {
+            file: '../../docker/apache-php/files/sources/js/slh-umd.js',
+            format: 'umd',
+            name: 'SantasLittleHelper',
+        },
+        plugins:[...plugs]
+    },
 
 ] 

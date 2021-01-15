@@ -4,8 +4,6 @@ import TypeOf from './TypeOf.js'
 import {OnAdd, OnChange, Subscribe} from './Subscribe.js'
 import {ModifyNode, SubtreeByPath} from './Modify.js'
 
-
-
 const createStateStorage = ({initData = {}} = {}) => {
 
     const createNode = body => {

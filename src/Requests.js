@@ -31,15 +31,19 @@ const Request = ({
 
 const PostRequest = (props = {}) => Request({method: 'POST', ...props})
 const GetRequest = (props = {}) => Request({method: 'GET', ...props})
+const PutRequest = (props = {}) => Request({method: 'PUT', ...props})
+const DelRequest = (props = {}) => Request({method: 'DELETE', ...props})
 
-const GoRequest = requestFn =>
+const GoRequest = (requestFn) =>
     ({
         url = 'localhost',
         element = null,
         event = 'click',
         data = {},
         headers = {},
-        sbsFunc = (() => {}) 
+        sbsFunc = (() => {}) ,
+        errorCallback = (() => {}),
+        pipe = []
     } = {}) => 
         element ?
             (() => {
@@ -47,19 +51,20 @@ const GoRequest = requestFn =>
                     element,
                     event,
                     sbsFunc,
-                    pipe: [ switchMap(i => requestFn({url, data, headers})) ]
+                    pipe: [ switchMap(i => requestFn({url, data, headers, errorCallback, pipe})) ]
                 })
             })() :
             (() => {
                 ReactRx().runOnceOBS({
-                    observable: requestFn({url, data, headers}),
+                    observable: requestFn({url, data, headers, errorCallback, pipe}),
                     relayFunc: sbsFunc
                 })
             })
 
 const GoGet = GoRequest(GetRequest)
-
 const GoPost = GoRequest(PostRequest)
+const GoPut = GoRequest(PutRequest)
+const GoDel = GoRequest(DelRequest)
 
 const Pipes = {
     filterResponse: ({debug = false} = {}) => [
@@ -74,4 +79,4 @@ const Pipes = {
     ]
 
 }
-export { PostRequest, GetRequest, GoGet, GoPost, Pipes }
+export { PostRequest, GetRequest, GoGet, GoPost, GoDel, GoPut, Pipes }

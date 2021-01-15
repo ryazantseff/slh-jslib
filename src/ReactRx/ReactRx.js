@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef, createElement} from 'react'
+import PropTypes from 'prop-types'
 import ReactDOM, {render} from 'react-dom'
 import {of, BehaviorSubject} from 'rxjs'
 import {first} from 'rxjs/operators'
@@ -38,6 +39,27 @@ const ReactRx = ({
             }
         }, [])
         return state
+    }
+    
+    const useSM = ({
+        nodePath = [],
+        defaultValue = {},
+        mode = 'single'
+    } = {}) => {
+        const node = StatesStor.SubtreeByPath({nodePath})
+        const modifyState = newValue => 
+            StatesStor.ModifyNode({storPath: nodePath, value: newValue})
+        const [state, setState] = _React.useState(node.Snapshot())
+        _React.useEffect(() => {
+            const sbs = node.OnChange({
+                fn: i => setState(node.Snapshot()),
+                mode,
+            })
+            return () => {
+                sbs.forEach(i => i.unsubscribe())
+            }
+        }, [])
+        return [state, modifyState]
     }
 
     const useOBS = ({
@@ -89,9 +111,11 @@ const ReactRx = ({
         OnChange,
         useOBS,
         useBS,
+        useSM,
         runOnceOBS,
         appendReactChild,
         insertReactChildBefore,
+        PropTypes,
         internalReact: React,
         internalReactDOM: ReactDOM,
         internalReactHooks: {

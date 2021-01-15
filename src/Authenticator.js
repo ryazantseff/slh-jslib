@@ -6,24 +6,28 @@ import {runOnceOBS} from './ReactRx/ReactRx.js'
 
 const Authenticator = ({
     apiUrl = 'http://localhost:5000',
-    refreshInterval = 10000
+    refreshInterval = 10000,
+    allowedUsers = []
 } = {}) => {
     const LOGGED_OFF = 0
     const LOGGED_IN = 1
     const PENDING = 2
     const state$ = new BehaviorSubject(LOGGED_OFF).pipe(
-        tap(i =>
-            console.log(i)
-        )
+        // tap(i => console.log(i) )
     )
 
     const validity$ = new BehaviorSubject({
         accessTokenValidity: false,
         refreshTokenValidity: false
     }).pipe(
-        tap(i => console.log(i))
+        // tap(i => console.log(i))
     )
     validity$.subscribe()
+
+    const tokenStorage$ = new BehaviorSubject({
+        accessToken: null,
+        refreshToken: null
+    })
 
     const tokens$ = new BehaviorSubject(null).pipe(
         map(i => i ?
@@ -34,8 +38,11 @@ const Authenticator = ({
             } : null
             
         ),
-        // tap(i => console.log(i)),
         tap(i => {
+            tokenStorage$.next({
+                accessToken: i?.accessToken,
+                refreshToken: i?.refreshToken
+            })
             i?.accessToken && Cookies.set('accessToken', i?.accessToken)
             i?.refreshToken && Cookies.set('refreshToken', i?.refreshToken)
         }),
@@ -58,7 +65,7 @@ const Authenticator = ({
     }
 
     const checkValidity$ = new Subject().pipe(
-        tap(i => console.log('checkValidity')),
+        // tap(i => console.log('checkValidity')),
         withLatestFrom(tokens$),
         tap(([nextVal, tokens]) => {
             validity$.next({
@@ -78,7 +85,7 @@ const Authenticator = ({
     const localSignIn$ = (login, pass, errCb) => GetRequest({
         url: `${apiUrl}/signIn`,
         headers: {'Authorization': `Basic ${btoa(login + ':' + pass)}`},
-        rrorCallback: errCb
+        errorCallback: errCb
     })
 
     const refresh$ = refreshToken => GetRequest({
@@ -86,16 +93,19 @@ const Authenticator = ({
         headers: {'Authorization': `Bearer ${refreshToken}`},
         pipe: [
             map(i => i.response),
-            tap(i => console.log(i)),
+            // tap(i => console.log(i)),
             tap(i => {
                 i.status == "OK" ?
                     tokens$.next(i.data) :
-                    tokens$.next(null) 
+                    (() => {
+                        Cookies.remove('accessToken')
+                        Cookies.remove('refreshToken')
+                        tokens$.next(null) 
+                    })()
             }),
             tap(i => checkValidity$.next())
         ]
     })
-    // refresh$.subscribe()
     
     const signIn$ = (login, pass, errCb) => localSignIn$(login, pass, errCb).pipe(
         switchMap(i =>
@@ -151,26 +161,28 @@ const Authenticator = ({
                 roles: tokens?.decodedAccessToken?.roles,
                 exp: tokens?.decodedAccessToken?.exp,
             })),
-            tap(i => console.log(i))
+            // tap(i => console.log(i))
         ),
         getState: () => state$.getValue(),
-        signIn: (
+        signIn: ({
             login,
             pass,
-            errCb = err => console.log(err),
-            sucCb = () => {}
-        ) => runOnceOBS({
-            observable: signIn$(login, pass, errCb),
-            relayFunc: i => {
-                i?.status == 'OK' && sucCb()
-            }
-        }),
+            errorCb = err => console.log(err),
+            successCb = () => {}
+        }) => allowedUsers.includes(login) || allowedUsers.length == 0 ?
+                runOnceOBS({
+                    observable: signIn$(login, pass, errorCb),
+                    relayFunc: i => {
+                        i?.status == 'OK' && successCb()
+                    }
+                }) : errorCb('User is not allowed'),
         signOut: () => {
             tokens$.next(null)
             Cookies.remove('accessToken')
             Cookies.remove('refreshToken')
             checkValidity$.next()
-        }
+        },
+        getTokens: () => tokenStorage$.getValue()
     }
     
 }

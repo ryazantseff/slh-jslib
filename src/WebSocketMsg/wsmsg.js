@@ -27,13 +27,15 @@ const WebSocketMsg = ({
     
     const $combined = combineLatest(...Object.keys(config).map(key => config[key]['msgStream']))
 
-    const $ws = webSocket(wsurl).pipe(
+    const $ws = webSocket(wsurl)
+    // $ws.subscribe()
+    
+    const $receiveMsg = $ws.pipe(
         withLatestFrom($combined),
         tap(([msg, combined]) => {
             $conState.next(true)
             combined[-1] = [];
             const separatedStream = combined[Object.keys(config).findIndex(key => key == msg.name)];
-
             msg = (config[msg.name] || mockObj)['mutateFn'](msg);
             (config[msg.name] || mockObj)['msgStream']
                 .next([msg, ...separatedStream.slice(0, (config[msg.name] || mockObj)['logLength'])])
@@ -41,17 +43,16 @@ const WebSocketMsg = ({
         finalize(() => $conState.next(false)),
         catchError(error => {
             console.log('error: ', error);
-            return rxjs.of(error);
+            return of(error);
         })
     )
     
     const $tmpState = new BehaviorSubject(false)
-    const $timer = timer(1000)
+    const $timer = timer(100)
 
     $conState.pipe(
         withLatestFrom($tmpState),
         tap(([newState, oldState]) => {
-            // console.log(newState)
             if (newState != oldState) {
                 newState ?
                     onConnected() :
@@ -60,11 +61,9 @@ const WebSocketMsg = ({
             $tmpState.next(newState)
         }),
         switchMap(([state, ...rest]) => {
-            console.log(state)
             if(!state) {
                 return $timer.pipe(
-                    // tap(i => $conState.next(true)),
-                    switchMap(j => $ws)
+                    switchMap(j => $receiveMsg)
                 )
             } else {
                 return empty()
