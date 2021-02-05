@@ -42,7 +42,8 @@ export default [
     {
         input: 'src/main.js',
         output: {
-            file: '../../docker/apache-php/files/www/templates/index/js/slh.js',
+            // file: '../../docker/apache-php/files/www/templates/index/js/slh.js',
+            file: 'dist/slh-iife.js',
             format: 'iife',
             name: 'SantasLittleHelper',
         },
@@ -51,7 +52,7 @@ export default [
     {
         input: 'src/main.js',
         output: {
-            file: '../../docker/apache-php/files/sources/js/slh-umd.js',
+            file: 'dist/slh-umd.js',
             format: 'umd',
             name: 'SantasLittleHelper',
         },
