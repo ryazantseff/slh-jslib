@@ -24,6 +24,7 @@ const plugs = [
         }
     }),
     replace({
+        preventAssignment: true,
         'process.env.NODE_ENV': JSON.stringify( 'production' )
     }),
 ]
@@ -34,16 +35,6 @@ export default [
         input: 'src/main.js',
         output: {
             file: 'dist/slh.min.js',
-            format: 'iife',
-            name: 'SantasLittleHelper',
-        },
-        plugins:[...plugs]
-    },
-    {
-        input: 'src/main.js',
-        output: {
-            // file: '../../docker/apache-php/files/www/templates/index/js/slh.js',
-            file: 'dist/slh-iife.js',
             format: 'iife',
             name: 'SantasLittleHelper',
         },

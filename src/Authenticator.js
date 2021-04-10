@@ -112,8 +112,8 @@ const Authenticator = ({
 
     
     const signIn$ = (login, pass, errCb) => localSignIn$(login, pass, errCb).pipe(
-        tap(i => i?.status == 'pending' && state$.next(PENDING)),
-        skipWhile(i => i?.status == 'pending'),
+        tap(i => i.status == 'pending' && state$.next(PENDING)),
+        skipWhile(i => i.status == 'pending'),
         switchMap(i =>
             i.status == "ok" ?
             of(i) :
