@@ -1,9 +1,14 @@
 import { fromEvent, BehaviorSubject} from 'rxjs'
 import { ajax } from 'rxjs/ajax'
-import { tap, map, filter, switchMap } from 'rxjs/operators'
+import { tap, map, filter, switchMap, first, skip, skipWhile } from 'rxjs/operators'
 import GlobalKeyboardEventsLogic from './GlobalKeyboardEventsLogic.js'
 import ElementFocusBS from './ElementFocusBS.js'
-import {PostRequest, GetRequest, GoGet, GoPost, GoPut, GoDel, Pipes} from './Requests.js'
+import {
+    usePost,
+    useGet,
+    usePut,
+    useDel,
+    Request, PostRequest, GetRequest, GoGet, GoPost, GoPut, GoDel, Pipes} from './Requests.js'
 import SubscribeOnEvent from './SubscribeOnEvent.js'
 import ReactRx from './ReactRx/ReactRx.js'
 import StateStorage from './StateMngr/StateMngr.js'
@@ -32,17 +37,25 @@ const SantasLittleHelper = ({
         R: ReactRx().internalReact,
         RD: ReactRx().internalReactDOM,
         RH: ReactRx().internalReactHooks,
+        Request,
         PostRequest,
         GetRequest,
         GoGet,
         GoPost,
         GoPut,
         GoDel,
+        usePost,
+        useGet,
+        usePut,
+        useDel,
         Pipes,
         SubscribeOnEvent,
         StateStorage,
         RunObservable: ReactRx().runOnceOBS,
         RxOps: {
+            'skipWhile': skipWhile,
+            'skip': skip,
+            'first': first,
             'map': map,
             'ajax': ajax,
             'tap': tap,

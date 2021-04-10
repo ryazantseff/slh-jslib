@@ -1,13 +1,13 @@
 import Cookies from 'js-cookie'
 import {of, BehaviorSubject, Subject, interval} from 'rxjs'
-import { map, tap, catchError, switchMap, filter, withLatestFrom } from 'rxjs/operators'
+import { map, tap, catchError, switchMap, filter, withLatestFrom, skipWhile } from 'rxjs/operators'
 import {PostRequest, GetRequest, GoGet, GoPost} from './Requests.js'
 import {runOnceOBS} from './ReactRx/ReactRx.js'
 
 const Authenticator = ({
     apiUrl = 'http://localhost:5000',
-    refreshInterval = 10000,
-    allowedUsers = []
+    refreshInterval = 0,
+    forceRefresh = false
 } = {}) => {
     const LOGGED_OFF = 0
     const LOGGED_IN = 1
@@ -93,9 +93,11 @@ const Authenticator = ({
         headers: {'Authorization': `Bearer ${refreshToken}`},
         pipe: [
             map(i => i.response),
-            // tap(i => console.log(i)),
+            tap(i => i?.status == 'pending' && state$.next(PENDING)),
+            skipWhile(i => i?.status == 'pending'),
+            
             tap(i => {
-                i.status == "OK" ?
+                i.status == "ok" ?
                     tokens$.next(i.data) :
                     (() => {
                         Cookies.remove('accessToken')
@@ -106,27 +108,39 @@ const Authenticator = ({
             tap(i => checkValidity$.next())
         ]
     })
+
+
     
     const signIn$ = (login, pass, errCb) => localSignIn$(login, pass, errCb).pipe(
+        tap(i => i?.status == 'pending' && state$.next(PENDING)),
+        skipWhile(i => i?.status == 'pending'),
         switchMap(i =>
-            i.status == "OK" ?
-                of(i) :
-                adSignIn$(login, pass, errCb)
+            i.status == "ok" ?
+            of(i) :
+            adSignIn$(login, pass, errCb)
         ),
+        tap(i => i?.status == 'pending' && state$.next(PENDING)),
+        skipWhile(i => i?.status == 'pending'),
         tap(i =>
-            i.status == "OK" ?
+            i.status == "ok" ?
                 tokens$.next(i.data) :
                 tokens$.next(null) 
         ),
         tap(i => checkValidity$.next())
     )
 
-    const scheduler$ = interval(refreshInterval).pipe(
-        withLatestFrom(state$),
-        filter(([i, state]) => state != LOGGED_OFF),
-        tap(i => checkValidity$.next())
-    )
-    scheduler$.subscribe()
+    forceRefresh ?
+        refreshInterval > 0 && 
+            interval(refreshInterval).pipe(
+                withLatestFrom(tokens$),
+                switchMap(([nextVal, tokens]) => refresh$(tokens?.refreshToken))
+            ).subscribe() :
+        refreshInterval > 0 &&
+            interval(refreshInterval).pipe(
+                withLatestFrom(state$),
+                filter(([i, state]) => state != LOGGED_OFF),
+                tap(i => checkValidity$.next())
+            ).subscribe()
 
     validity$.pipe(
         withLatestFrom(tokens$),
@@ -158,7 +172,7 @@ const Authenticator = ({
             map(([state, tokens]) => ({
                 state,
                 userName: tokens?.decodedAccessToken?.username, 
-                roles: tokens?.decodedAccessToken?.roles,
+                groups: tokens?.decodedAccessToken?.groups,
                 exp: tokens?.decodedAccessToken?.exp,
             })),
             // tap(i => console.log(i))
@@ -169,20 +183,28 @@ const Authenticator = ({
             pass,
             errorCb = err => console.log(err),
             successCb = () => {}
-        }) => allowedUsers.includes(login) || allowedUsers.length == 0 ?
-                runOnceOBS({
-                    observable: signIn$(login, pass, errorCb),
-                    relayFunc: i => {
-                        i?.status == 'OK' && successCb()
-                    }
-                }) : errorCb('User is not allowed'),
+        }) => runOnceOBS({
+            observable: signIn$(login, pass, errorCb),
+            relayFunc: i => {
+                i?.status == 'ok' && successCb()
+            }
+        }),
         signOut: () => {
             tokens$.next(null)
             Cookies.remove('accessToken')
             Cookies.remove('refreshToken')
             checkValidity$.next()
         },
-        getTokens: () => tokenStorage$.getValue()
+        getTokens: () => tokenStorage$.getValue(),
+        authorize: ({
+            validUsers = [],
+            validGroups = []
+        } = {}) => {
+            const decodedToken = JSON.parse(atob(tokenStorage$.getValue()?.accessToken.split('.')[1]))
+            const userName = decodedToken?.username 
+            const groups = decodedToken?.groups
+            return validUsers.includes(userName) || validGroups.some(i => groups.includes(i)) ? true : false
+        }
     }
     
 }
