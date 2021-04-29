@@ -16,6 +16,30 @@ const runOnceOBS = ({
     })
 }
 
+const useClickOutsideEffect = (fn, state) => {
+    const ref = useRef(null);
+    useEffect(() => {
+        const handleOutsideClick = (event) => 
+            !ref?.current?.contains(event.target) && state && fn()
+        window.addEventListener('click', handleOutsideClick)
+        return () => window.removeEventListener('click', handleOutsideClick)
+    }, [ref, state])
+    return ref
+} 
+
+
+const useOBS = ({
+    observable = of({}),
+    defaultValue = {}
+} = {}) => {
+    const [state, setState] = useState(defaultValue)
+    useEffect(() => {
+        const sbs = observable.subscribe(i => setState(i), i => console.error(i))
+        return () => sbs.unsubscribe()
+    }, [])
+    return state
+}
+
 const ReactRx = ({
     StatesStor = StateStorage(),
     _React = React,
@@ -24,12 +48,11 @@ const ReactRx = ({
 
     const OnChange = ({
         nodePath = [],
-        defaultValue = {},
         mode = 'single'
     } = {}) => {
         const node = StatesStor.SubtreeByPath({nodePath})
-        const [state, setState] = _React.useState(node.Snapshot())
-        _React.useEffect(() => {
+        const [state, setState] = useState(node.Snapshot())
+        useEffect(() => {
             const sbs = node.OnChange({
                 fn: i => setState(node.Snapshot()),
                 mode,
@@ -66,8 +89,8 @@ const ReactRx = ({
         observable = of({}),
         defaultValue = {}
     } = {}) => {
-        const [state, setState] = _React.useState(defaultValue)
-        _React.useEffect(() => {
+        const [state, setState] = useState(defaultValue)
+        useEffect(() => {
             const sbs = observable.subscribe(i => setState(i), i => console.error(i))
             return () => sbs.unsubscribe()
         }, [])
@@ -115,17 +138,9 @@ const ReactRx = ({
         runOnceOBS,
         appendReactChild,
         insertReactChildBefore,
-        PropTypes,
-        internalReact: React,
-        internalReactDOM: ReactDOM,
-        internalReactHooks: {
-            useState,
-            useEffect,
-            useRef 
-        }
     }
 
 }
 
 export default ReactRx
-export {runOnceOBS}
+export {runOnceOBS, useOBS, useClickOutsideEffect}

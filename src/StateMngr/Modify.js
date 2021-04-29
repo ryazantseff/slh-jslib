@@ -28,11 +28,7 @@ const objectsIntersection = (o1, o2) => {
 
 const SubtreeByPath = function({storPath = [], nodePath = null} = {}) {
     storPath = nodePath != null ? nodePath : storPath
-    // console.log(storPath)
-    return storPath.reduce((acc, item) => {
-            // console.log(acc)
-            return acc?.Content?.data[item] 
-        }, this)
+    return storPath.reduce((acc, item) => acc?.Content?.data[item], this)
 } 
 
 const ModifyNode = function({storPath = [], nodePath = null, value = {}, mode = 'replace', delay = 0} = {}) {

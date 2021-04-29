@@ -2,8 +2,11 @@ import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import replace from '@rollup/plugin-replace'
 import babel from 'rollup-plugin-babel'
+import peerDepsExternal from "rollup-plugin-peer-deps-external"
+import { uglify } from "rollup-plugin-uglify"
 
 const plugs = [
+    peerDepsExternal(),
     babel({exclude: 'node_modules/**'}),
     resolve({
         dedupe: [ 
@@ -38,7 +41,7 @@ export default [
             format: 'iife',
             name: 'SantasLittleHelper',
         },
-        plugins:[...plugs]
+        plugins:[...plugs, uglify()]
     },
     {
         input: 'src/main.js',

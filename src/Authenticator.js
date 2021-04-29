@@ -1,8 +1,8 @@
 import Cookies from 'js-cookie'
 import {of, BehaviorSubject, Subject, interval} from 'rxjs'
 import { map, tap, catchError, switchMap, filter, withLatestFrom, skipWhile } from 'rxjs/operators'
-import {PostRequest, GetRequest, GoGet, GoPost} from './Requests.js'
-import {runOnceOBS} from './ReactRx/ReactRx.js'
+import {PostRequest, GetRequest, GoGet, GoPost, Request} from './Requests.js'
+import {runOnceOBS, useOBS} from './ReactRx/ReactRx.js'
 
 const Authenticator = ({
     apiUrl = 'http://localhost:5000',
@@ -30,6 +30,7 @@ const Authenticator = ({
     })
 
     const tokens$ = new BehaviorSubject(null).pipe(
+        // tap(i => console.log(i)),
         map(i => i ?
             {
                 ...i,
@@ -92,10 +93,9 @@ const Authenticator = ({
         url: `${apiUrl}/refreshToken`,
         headers: {'Authorization': `Bearer ${refreshToken}`},
         pipe: [
-            map(i => i.response),
             tap(i => i?.status == 'pending' && state$.next(PENDING)),
             skipWhile(i => i?.status == 'pending'),
-            
+            map(i => i.response),
             tap(i => {
                 i.status == "ok" ?
                     tokens$.next(i.data) :
@@ -121,6 +121,7 @@ const Authenticator = ({
         ),
         tap(i => i?.status == 'pending' && state$.next(PENDING)),
         skipWhile(i => i?.status == 'pending'),
+        // tap(i => console.log(i)),
         tap(i =>
             i.status == "ok" ?
                 tokens$.next(i.data) :
@@ -161,6 +162,13 @@ const Authenticator = ({
     ).subscribe()
 
     loadTokensFromCookies()
+
+    const signOut = () => {
+        tokens$.next(null)
+        Cookies.remove('accessToken')
+        Cookies.remove('refreshToken')
+        checkValidity$.next()
+    }
     return {
         states: {
             LOGGED_OFF,
@@ -189,22 +197,44 @@ const Authenticator = ({
                 i?.status == 'ok' && successCb()
             }
         }),
-        signOut: () => {
-            tokens$.next(null)
-            Cookies.remove('accessToken')
-            Cookies.remove('refreshToken')
-            checkValidity$.next()
-        },
+        signOut,
         getTokens: () => tokenStorage$.getValue(),
         authorize: ({
             validUsers = [],
             validGroups = []
         } = {}) => {
-            const decodedToken = JSON.parse(atob(tokenStorage$.getValue()?.accessToken.split('.')[1]))
+            const accessToken = tokenStorage$.getValue()?.accessToken
+            if(!accessToken) return false
+            const decodedToken = JSON.parse(atob(accessToken.split('.')[1]))
             const userName = decodedToken?.username 
             const groups = decodedToken?.groups
-            return validUsers.includes(userName) || validGroups.some(i => groups.includes(i)) ? true : false
-        }
+            return (validUsers.includes(userName) || validGroups.some(i => groups.includes(i))) ? true : false
+        },
+        useAuthorize: ({
+            validUsers = [],
+            validGroups = []
+        } = {}) => useOBS({
+            defaultValue: false,
+            observable: state$.pipe(
+                withLatestFrom(tokens$),
+                // tap(([state, tokens]) => {console.log(state); console.log(tokens);}),
+                map(
+                    ([state, tokens]) => (state == LOGGED_OFF || tokens == null) ? false :
+                        (validUsers.includes(tokens?.decodedAccessToken?.username) ||
+                        validGroups.some(i => tokens?.decodedAccessToken?.groups.includes(i))) ? true : false
+                ),
+                // tap(i => console.log(i))
+            )
+        }),
+        tokenWrapedRequest: (props = {}) => Request({
+            headers: {
+                Authorization: `Bearer ${tokenStorage$.getValue().accessToken}`
+            },
+            errorCallback: e => (e?.status == 401 && (()=>{
+                signOut()
+            })()),
+            ...props
+        })
     }
     
 }

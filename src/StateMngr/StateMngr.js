@@ -4,7 +4,7 @@ import TypeOf from './TypeOf.js'
 import {OnAdd, OnChange, Subscribe} from './Subscribe.js'
 import {ModifyNode, SubtreeByPath} from './Modify.js'
 
-const createStateStorage = ({initData = {}} = {}) => {
+const StateStorage = ({initData = {}} = {}) => {
 
     const createNode = body => {
         let node = {}
@@ -18,7 +18,7 @@ const createStateStorage = ({initData = {}} = {}) => {
             'object': () => {
                 const bsBody = Object.keys(data).reduce((acc, key) => {
                     // console.log(key)
-                    acc[key] = createStateStorage({initData: data[key]})
+                    acc[key] = StateStorage({initData: data[key]})
                     return acc
                 }, {})
                 // console.log(bsBody)
@@ -57,7 +57,7 @@ const createStateStorage = ({initData = {}} = {}) => {
     // }
 
     return {
-        CreateStateStorage: createStateStorage,
+        CreateStateStorage: StateStorage,
         OnAdd,
         OnChange,
         Subscribe,
@@ -69,14 +69,15 @@ const createStateStorage = ({initData = {}} = {}) => {
     }
 }
 
-let stateStorageSinglton = undefined
+// let stateStorageSinglton = undefined
 
-const StateStorage = ({initData = {}} = {}) => {
-    // console.log(stateStorageSinglton)
-    if(stateStorageSinglton == undefined) {
-        stateStorageSinglton = createStateStorage({initData})
-    }
-    return stateStorageSinglton
-}
+// const StateStorage = ({initData = {}} = {}) => {
+//     // console.log(stateStorageSinglton)
+//     console.log(initData)
+//     if(stateStorageSinglton == undefined) {
+//         stateStorageSinglton = createStateStorage({initData})
+//     }
+//     return stateStorageSinglton
+// }
 
 export default StateStorage

@@ -8,9 +8,10 @@ import ReactRx from './ReactRx/ReactRx.js'
 const Request = ({
     url = 'localhost',
     pipe = [
-        map(i => i.response),
+        map(i => i?.response || i),
         // tap(i => console.log(i))
     ],
+    mapFn = i => i,
     headers = {},
     data = null,
     method = 'GET',
@@ -22,10 +23,10 @@ const Request = ({
         method: method,
         headers: {'Content-Type': 'application/json', ...headers},
         body: {...data}
-    }).pipe(
-        ...pipe
-    )
+    })
 ).pipe(
+    ...pipe,
+    map(i => mapFn(i)),
     catchError(error => {
         console.log('error: ', error);
         errorCallback(error)
@@ -45,7 +46,7 @@ const GoRequest = (requestFn) =>
         event = 'click',
         data = null,
         headers = {},
-        sbsFunc = (() => {}) ,
+        mapFn = (() => {}) ,
         errorCallback = (() => {}),
         pipe = []
     } = {}) => 
@@ -54,14 +55,14 @@ const GoRequest = (requestFn) =>
                 return SubscribeOnEvent({
                     element,
                     event,
-                    sbsFunc,
+                    sbsFunc: mapFn,
                     pipe: [ switchMap(i => requestFn({url, data, headers, errorCallback, pipe})) ]
                 })
             })() :
             (() => {
                 ReactRx().runOnceOBS({
                     observable: requestFn({url, data, headers, errorCallback, pipe}),
-                    relayFunc: sbsFunc
+                    relayFunc: mapFn
                 })
             })
 
