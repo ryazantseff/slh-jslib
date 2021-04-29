@@ -28,10 +28,10 @@ const Request = ({
     ...pipe,
     map(i => mapFn(i)),
     catchError(error => {
-        console.log('error: ', error);
         errorCallback(error)
-        return of(error);
-    })
+        return of(error.response)
+    }),
+    // tap(i=>console.log(i))
 )
 
 const PostRequest = (props = {}) => Request({method: 'POST', ...props})

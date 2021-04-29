@@ -70,15 +70,21 @@ test('useAuthorizeUser', async () => {
     const { result, waitForNextUpdate } = renderHook(() => hook())
 
     expect(result.current).toBe(false)
-    auth.signIn({
-        'login': 'admin',
-        'pass': ''
+    act(() => {
+        auth.signIn({
+            'login': 'admin',
+            'pass': ''
+        })
+
     })
     await waitForNextUpdate()
     expect(result.current).toBe(true)
-    auth.signIn({
-        'login': 'mryazantsev',
-        'pass': 'Rssgx14rc'
+    act(() => {
+        auth.signIn({
+            'login': 'mryazantsev',
+            'pass': 'Rssgx14rc'
+        })
+
     })
     await waitForNextUpdate()
     expect(result.current).toBe(false)
@@ -205,4 +211,50 @@ test('tokenWrapedRequest', async () => {
     expect(response.data.map(i => i?.name)).not.toEqual(
         expect.arrayContaining(['yyashmolkin', 'igulenko'])
     )
+})
+
+
+test('useAuthorizeWrongPassword', async () => {
+    const auth = $SLH$().Authenticator({apiUrl: process.env.JWT_SERVER})
+    const hook = () => auth.useAuthorize()
+    const { result, waitForNextUpdate, waitForValueToChange } = renderHook(() => hook())
+
+    expect(result.current).toBe(false)
+    act(() => {
+
+        auth.signIn({
+            'login': 'admin',
+            'pass': 'asdasd'
+        })
+    })
+    await new Promise((r) => setTimeout(r, 500));
+    expect(result.current).toBe(false)
+    act(()=>{
+        auth.signIn({
+            'login': 'admin',
+            'pass': ''
+        })
+
+    })
+    await waitForNextUpdate()
+    expect(result.current).toBe(true)
+    act(()=>{
+        auth.signIn({
+            'login': 'mryazantsev',
+            'pass': 'dsfsdfsdf'
+        })
+
+    })
+    await new Promise((r) => setTimeout(r, 500));
+    expect(result.current).toBe(false)
+    act(()=>{
+        auth.signIn({
+            'login': 'mryazantsev',
+            'pass': 'Rssgx14rc'
+        })
+
+    })
+    await waitForNextUpdate()
+    expect(result.current).toBe(true)
+
 })

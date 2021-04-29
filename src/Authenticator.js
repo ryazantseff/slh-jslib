@@ -114,6 +114,8 @@ const Authenticator = ({
     const signIn$ = (login, pass, errCb) => localSignIn$(login, pass, errCb).pipe(
         tap(i => i.status == 'pending' && state$.next(PENDING)),
         skipWhile(i => i.status == 'pending'),
+        // tap(i=>console.log('TEST')),
+        // tap(i=>console.log(i)),
         switchMap(i =>
             i.status == "ok" ?
             of(i) :
@@ -121,6 +123,7 @@ const Authenticator = ({
         ),
         tap(i => i?.status == 'pending' && state$.next(PENDING)),
         skipWhile(i => i?.status == 'pending'),
+        // tap(i=>console.log('TEST2')),
         // tap(i => console.log(i)),
         tap(i =>
             i.status == "ok" ?
@@ -145,6 +148,7 @@ const Authenticator = ({
 
     validity$.pipe(
         withLatestFrom(tokens$),
+        // tap((v,t) => console.log(v,t)),
         switchMap(([validity, tokens]) => 
             validity?.accessTokenValidity && validity?.refreshTokenValidity && (()=>{
                 state$.next(LOGGED_IN)
@@ -189,14 +193,16 @@ const Authenticator = ({
         signIn: ({
             login,
             pass,
-            errorCb = err => console.log(err),
+            errorCb = () => {},
             successCb = () => {}
-        }) => runOnceOBS({
-            observable: signIn$(login, pass, errorCb),
-            relayFunc: i => {
-                i?.status == 'ok' && successCb()
-            }
-        }),
+        }) => {
+            signOut()
+            return runOnceOBS({
+                observable: signIn$(login, pass, errorCb),
+                relayFunc: i => {
+                    i?.status == 'ok' && successCb()
+            }})
+        },
         signOut,
         getTokens: () => tokenStorage$.getValue(),
         authorize: ({
@@ -220,8 +226,9 @@ const Authenticator = ({
                 // tap(([state, tokens]) => {console.log(state); console.log(tokens);}),
                 map(
                     ([state, tokens]) => (state == LOGGED_OFF || tokens == null) ? false :
+                        (validUsers.length > 0 || validGroups.length > 0) ? 
                         (validUsers.includes(tokens?.decodedAccessToken?.username) ||
-                        validGroups.some(i => tokens?.decodedAccessToken?.groups.includes(i))) ? true : false
+                        validGroups.some(i => tokens?.decodedAccessToken?.groups.includes(i))): true ? true : false
                 ),
                 // tap(i => console.log(i))
             )
